@@ -17,9 +17,10 @@ function App() {
   const [email, setEmail] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erroForm, setErroForm] = useState("");
+  const [editandoId, setEditandoId] = useState<number | null>(null)
 
   useEffect(() => {
-    async function carregar() {
+    async function Carregar() {
       try {
         const response = await fetch(`${API}/pessoas`)
         if (!response.ok) throw new Error(`Erro HTTS: ${response.status}`)
@@ -32,11 +33,12 @@ function App() {
         setCarregando(false)
       }
     }
-    carregar()
+    Carregar()
   }, [])
 
-  async function enviar(evento: SyntheticEvent<HTMLFormElement>) {
-    evento.preventDefault
+  /* METODO POST */
+  async function Enviar(evento: SyntheticEvent<HTMLFormElement>) {
+    evento.preventDefault()
     setErroForm("")
     setEnviando(true)
 
@@ -49,7 +51,7 @@ function App() {
 
       const dados = await response.json()
       if (!response.ok) {
-        setErroForm(dados.erro ?? `Erro HTTP: ${response.status}`)
+        setErroForm(dados.erro ?? `Erro HTTS: ${response.status}`)
         return
       }
       setPessoas((atual) => [...atual, dados as Pessoa])
@@ -69,7 +71,7 @@ function App() {
     <div className="min-h-screen bg-slate-900 p-8 text-slate-100 flex flex-col items-center">
       <h1 className="mb-6 text-3xl font-bold text-pink-400">Pessoas</h1>
 
-      <form onSubmit={enviar} className="mb-8 max-w-md space-y-3 rounded-lg bg-slate-800 p-4">
+      <form onSubmit={Enviar} className="mb-8 max-w-md space-y-3 rounded-lg bg-slate-800 p-4">
         <input className={campo} placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
         <input className={campo} placeholder="Telefone" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
         <input className={campo} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
