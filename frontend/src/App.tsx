@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Pessoa } from "./types";
 import type { SyntheticEvent } from "react";
+import Dropdown from "./component/dropdown";
 
 const API = "http://localhost:3001";
 
@@ -65,7 +66,7 @@ function App() {
   const campo = "w-full rounded-lg bg-slate-700 px-3 py-2 text-slate-100 outline-none focus:ring-2 focus:ring-pink-400";
 
   return (
-    <div className="min-h-screen bg-slate-900 p-8 text-slate-100">
+    <div className="min-h-screen bg-slate-900 p-8 text-slate-100 flex flex-col items-center">
       <h1 className="mb-6 text-3xl font-bold text-pink-400">Pessoas</h1>
 
       <form onSubmit={enviar} className="mb-8 max-w-md space-y-3 rounded-lg bg-slate-800 p-4">
@@ -83,16 +84,20 @@ function App() {
       {carregando && <p>Carregando...</p>}
       {erroLista && <p className="text-red-400">{erroLista}</p>}
 
-      <ul className="flex flex-col gap-2 max-w-md">
-        {pessoas.map((p) => (
-          <li key={p.id} className="bg-slate-800 border border-slate-700 rounded-xl p-3">
-            <p>{p.nome}</p>
-            <p className="text-sm text-slate-400">
-              {p.telefone} · {p.email}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <div className="border border-slate-700 rounded-xl p-4">
+        <h2 className="mb-4 text-xl">Lista de Pessoas</h2>
+        <ul className="flex flex-col gap-2 w-2xl">
+          {pessoas.map((p) => (
+            <li key={p.id} className="relative bg-slate-800 border border-slate-700 rounded-xl p-3 w-full">
+              {<Dropdown onEdit={() => { }} onDelete={() => { }} />}
+              <p>{p.nome}</p>
+              <p className="text-sm text-slate-400">
+                {p.telefone} · {p.email}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
