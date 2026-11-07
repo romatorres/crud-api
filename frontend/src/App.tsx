@@ -36,28 +36,47 @@ function App() {
     Carregar()
   }, [])
 
-  /* METODO POST */
+  function IniciarEdicao(p: Pessoa) {
+    setEditandoId(p.id)
+    setNome(p.nome)
+    setTelefone(p.telefone)
+    setEmail(p.email)
+    setErroForm("")
+  }
+
+  function LimpaForm() {
+    setEditandoId(null)
+    setNome("")
+    setTelefone("")
+    setEmail("")
+  }
+
+  /* METODO POST e PUT */
   async function Enviar(evento: SyntheticEvent<HTMLFormElement>) {
     evento.preventDefault()
     setErroForm("")
     setEnviando(true)
 
+    const editando = editandoId !== null
+    const url = editando ? `${API}/pessoas/${editandoId}` : `${API}/pessoas`
+
     try {
-      const response = await fetch(`${API}/pessoas`, {
-        method: "POST",
+      const response = await fetch(url, {
+        method: editando ? "PUT" : "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, telefone, email })
       })
 
       const dados = await response.json()
       if (!response.ok) {
-        setErroForm(dados.erro ?? `Erro HTTS: ${response.status}`)
+        setErroForm(dados.erro ?? `Erro HTTP: ${response.status}`)
         return
       }
-      setPessoas((atual) => [...atual, dados as Pessoa])
-      setNome("")
-      setTelefone("")
-      setEmail("")
+      if (editando) {
+        setPessoas((atual) => atual.map((p) => (p.id === editandoId) ? (dados as Pessoa) : p))
+      } else {
+        setPessoas((atual) => [...atual, dados as Pessoa])
+      } LimpaForm()
     } catch {
       setErroForm("Não foi possivel conectar ao servidor!")
     } finally {
@@ -78,9 +97,17 @@ function App() {
 
         {erroForm && <p className="text-red-400">{erroForm}</p>}
 
-        <button type="submit" disabled={enviando} className="cursor-pointer rounded-lg bg-pink-500 px-4 py-2 font-semibold text-white hover:bg-pink-400 disabled:opacity-50">
-          {enviando ? "Salvando" : "Cadastrar"}
-        </button>
+        <div className="flex gap-2">
+          <button type="submit" disabled={enviando} className="cursor-pointer rounded-lg bg-pink-500 px-4 py-2 font-semibold text-white hover:bg-pink-400 disabled:opacity-50">
+            {enviando ? "Salvando..." : editandoId !== null ? "Salvar alteração" : "Cadastrar"}
+          </button>
+
+          {editandoId !== null && (
+            <button type="button" onClick={LimpaForm} className="cursor-pointer rounded-lg bg-slate-600 px-4 py-2 hover:bg-slate-500">
+              Cancelar
+            </button>
+          )}
+        </div>
       </form>
 
       {carregando && <p>Carregando...</p>}
@@ -91,7 +118,7 @@ function App() {
         <ul className="flex flex-col gap-2 w-2xl">
           {pessoas.map((p) => (
             <li key={p.id} className="relative bg-slate-800 border border-slate-700 rounded-xl p-3 w-full">
-              {<Dropdown onEdit={() => { }} onDelete={() => { }} />}
+              {<Dropdown onEdit={() => IniciarEdicao(p)} onDelete={() => { }} />}
               <p>{p.nome}</p>
               <p className="text-sm text-slate-400">
                 {p.telefone} · {p.email}
