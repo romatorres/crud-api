@@ -71,11 +71,13 @@ Garanta estas duas coisas (o resto pode ficar como o `npm init` criou):
 {
   "type": "module",
   "scripts": {
+    "db:create": "node --experimental-sqlite --import tsx src/db.ts",
     "dev": "node --experimental-sqlite --import tsx --watch src/index.ts"
   }
 }
 ```
 
+- `db:create` cria o arquivo `backend/pessoas.db` e a tabela, sem iniciar o servidor.
 - `"type": "module"` permite usar `import`/`export`.
 - `--import tsx` faz o Node entender TypeScript.
 - `--watch` reinicia o servidor ao salvar um arquivo.
@@ -286,14 +288,24 @@ Pontos que importam na ordem do arquivo:
 
 ### 8. Rodar
 
+Na raiz do projeto, use:
+
 ```bash
+npm run db:create
 npm run dev
 ```
 
-Saída esperada:
+O primeiro comando cria o banco. O segundo inicia a API e também garante que o banco e a tabela existam. Se estiver dentro da pasta `backend`, use `npm run db:create` ou `npm run dev` diretamente.
+
+Saída esperada ao criar o banco:
 
 ```
 Banco SQLite pronto em: ...\backend\pessoas.db
+```
+
+Para iniciar a API, `npm run dev` mostra:
+
+```bash
 Servidor rodando em http://localhost:3001
 ```
 

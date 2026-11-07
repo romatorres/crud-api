@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "db:create": "node --experimental-sqlite --import tsx src/db.ts",
     "dev": "node --experimental-sqlite --import tsx --watch src/index.ts"
   },
   "keywords": [],
