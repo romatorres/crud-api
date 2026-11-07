@@ -56,7 +56,7 @@ app.post("/pessoas", (req, res) => {
   const { nome, telefone, email } = req.body;
 
   if (!nome || !telefone || !email) {
-    res.status(400).json({ erro: "Informe nome, telefone e email" });
+    res.status(400).json({ erro: "Informe nome, telefone e email!" });
     return;
   }
 
