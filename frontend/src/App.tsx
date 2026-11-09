@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Pessoa } from "./types";
 import type { SyntheticEvent } from "react";
 import Dropdown from "./component/dropdown";
+import Modal from "./component/modal";
 
 const API = "http://localhost:3001";
 
@@ -18,6 +19,7 @@ function App() {
   const [enviando, setEnviando] = useState(false);
   const [erroForm, setErroForm] = useState("");
   const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
     async function Carregar() {
@@ -102,6 +104,8 @@ function App() {
         return;
       }
 
+      if (!window.confirm("Apagar esta pessoa?")) return
+
       setPessoas((atual) => atual.filter((p) => p.id !== id));
 
       if (editandoId === id) LimpaForm();
@@ -112,6 +116,8 @@ function App() {
 
   const campo =
     "w-full rounded-lg bg-slate-700 px-3 py-2 text-slate-100 outline-none focus:ring-2 focus:ring-pink-400";
+
+  const handleConfirm = (p: Pessoa) => { Apagar(p.id) }
 
   return (
     <div className="min-h-screen bg-slate-900 p-8 text-slate-100 flex flex-col items-center">
@@ -191,6 +197,28 @@ function App() {
             </li>
           ))}
         </ul>
+      </div>
+      {/* TESTE MODAL */}
+      <div className="flex items-center justify-center">
+
+        <button
+          onClick={() => setIsOpen(true)}
+          className="rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
+        >
+          Exibir notificação
+        </button>
+
+        {/* <Modal
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          title="Apagar Pessoa?"
+          message="Atenção, essa ação não podera ser desfeita!."
+          variant="danger"
+          confirmBtnText="Confirmar"
+          cancelBtnText="Cancelar"
+          onConfirm={handleConfirm}
+        /> */}
+
       </div>
     </div>
   );
