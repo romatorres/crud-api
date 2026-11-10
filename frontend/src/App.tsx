@@ -20,6 +20,8 @@ function App() {
   const [erroForm, setErroForm] = useState("");
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false)
+  const [selectPessoa, setSelectPessoa] = useState<Pessoa | null>(null) //Estado para guardar a pessoa a ser deletada
+  const [isDeleting, setIsDeleting] = useState(false)  //Estado para o spin de carregamento 
 
   useEffect(() => {
     async function Carregar() {
@@ -92,6 +94,7 @@ function App() {
   /* METODO DELETE */
   async function Apagar(id: number) {
     setErroLista("");
+    setIsDeleting(true)
 
     try {
       const response = await fetch(`${API}/pessoas/${id}`, {
@@ -104,20 +107,34 @@ function App() {
         return;
       }
 
-      if (!window.confirm("Apagar esta pessoa?")) return
-
       setPessoas((atual) => atual.filter((p) => p.id !== id));
 
       if (editandoId === id) LimpaForm();
+
+      // Exclusão concluída: fecha o modal
+      setIsOpen(false);
+      setSelectPessoa(null);
+
     } catch {
       setErroLista("Não foi possivel conectar ao servidor!");
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  function OpenModal(p: Pessoa) {
+    setSelectPessoa(p)
+    setIsOpen(true)
+  }
+
+  function handleConfirm() {
+    if (selectPessoa) {
+      Apagar(selectPessoa.id)
     }
   }
 
   const campo =
     "w-full rounded-lg bg-slate-700 px-3 py-2 text-slate-100 outline-none focus:ring-2 focus:ring-pink-400";
-
-  const handleConfirm = (p: Pessoa) => { Apagar(p.id) }
 
   return (
     <div className="min-h-screen bg-slate-900 p-8 text-slate-100 flex flex-col items-center">
@@ -187,7 +204,7 @@ function App() {
               {
                 <Dropdown
                   onEdit={() => IniciarEdicao(p)}
-                  onDelete={() => Apagar(p.id)}
+                  onDelete={() => OpenModal(p)}
                 />
               }
               <p>{p.nome}</p>
@@ -200,25 +217,22 @@ function App() {
       </div>
       {/* TESTE MODAL */}
       <div className="flex items-center justify-center">
-
-        <button
-          onClick={() => setIsOpen(true)}
-          className="rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
-        >
-          Exibir notificação
-        </button>
-
-        {/* <Modal
+        <Modal
           isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          title="Apagar Pessoa?"
-          message="Atenção, essa ação não podera ser desfeita!."
+          onClose={() => {
+            if (isDeleting) return
+
+            setSelectPessoa(null)
+            setIsOpen(false)
+          }}
+          title="Apagara essa pessoa?"
+          message={`Tem certeza que deseja apagar ${selectPessoa?.nome}?`}
           variant="danger"
           confirmBtnText="Confirmar"
           cancelBtnText="Cancelar"
           onConfirm={handleConfirm}
-        /> */}
-
+          isLoading={isDeleting}
+        />
       </div>
     </div>
   );
