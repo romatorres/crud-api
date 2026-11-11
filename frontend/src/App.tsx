@@ -57,7 +57,7 @@ function App() {
   }
 
   /* METODO POST e PUT */
-  async function enviar(evento: SyntheticEvent<HTMLFormElement>) {
+  async function sendData(evento: SyntheticEvent<HTMLFormElement>) {
     evento.preventDefault();
     setErroForm("");
     setEnviando(true);
@@ -139,7 +139,7 @@ function App() {
       <h1 className="mb-6 text-3xl font-bold text-pink-400">Pessoas</h1>
 
       <form
-        onSubmit={enviar}
+        onSubmit={sendData}
         className="mb-8 min-w-xl space-y-3 rounded-lg bg-slate-800 p-4"
       >
         <Input
@@ -151,7 +151,7 @@ function App() {
         />
 
         <Input
-          type="text"
+          type="tel"
           label="Telefone"
           value={telefone}
           placeholder="Digite seu telefone"
