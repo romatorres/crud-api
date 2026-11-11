@@ -3,14 +3,13 @@ import type { Pessoa } from "./types";
 import type { SyntheticEvent } from "react";
 import Dropdown from "./component/dropdown";
 import Modal from "./component/modal";
-
-const API = "http://localhost:3001";
+import Input from "./component/input";
 
 function App() {
   //Lista
   const [pessoas, setPessoas] = useState<Pessoa[]>([]);
-  const [erroLista, setErroLista] = useState("");
-  const [carregando, setCarregando] = useState(true);
+  const [listError, setListError] = useState("");
+  const [loading, setloading] = useState(true);
 
   //Formulario
   const [nome, setNome] = useState("");
@@ -23,24 +22,26 @@ function App() {
   const [selectPessoa, setSelectPessoa] = useState<Pessoa | null>(null) //Estado para guardar a pessoa a ser deletada
   const [isDeleting, setIsDeleting] = useState(false)  //Estado para o spin de carregamento 
 
+  const API = import.meta.env.VITE_API_URL
+
   useEffect(() => {
-    async function Carregar() {
+    async function loadData() {
       try {
         const response = await fetch(`${API}/pessoas`);
-        if (!response.ok) throw new Error(`Erro HTTS: ${response.status}`);
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
 
         const dados: Pessoa[] = await response.json();
         setPessoas(dados);
       } catch (e) {
-        setErroLista(e instanceof Error ? e.message : "Erro desconhecido");
+        setListError(e instanceof Error ? e.message : "Erro desconhecido");
       } finally {
-        setCarregando(false);
+        setloading(false);
       }
     }
-    Carregar();
+    loadData();
   }, []);
 
-  function IniciarEdicao(p: Pessoa) {
+  function startEditing(p: Pessoa) {
     setEditandoId(p.id);
     setNome(p.nome);
     setTelefone(p.telefone);
@@ -48,7 +49,7 @@ function App() {
     setErroForm("");
   }
 
-  function LimpaForm() {
+  function clearForm() {
     setEditandoId(null);
     setNome("");
     setTelefone("");
@@ -56,7 +57,7 @@ function App() {
   }
 
   /* METODO POST e PUT */
-  async function Enviar(evento: SyntheticEvent<HTMLFormElement>) {
+  async function enviar(evento: SyntheticEvent<HTMLFormElement>) {
     evento.preventDefault();
     setErroForm("");
     setEnviando(true);
@@ -83,7 +84,7 @@ function App() {
       } else {
         setPessoas((atual) => [...atual, dados as Pessoa]);
       }
-      LimpaForm();
+      clearForm();
     } catch {
       setErroForm("Não foi possivel conectar ao servidor!");
     } finally {
@@ -92,8 +93,8 @@ function App() {
   }
 
   /* METODO DELETE */
-  async function Apagar(id: number) {
-    setErroLista("");
+  async function deleteData(id: number) {
+    setListError("");
     setIsDeleting(true)
 
     try {
@@ -103,73 +104,74 @@ function App() {
 
       if (!response.ok) {
         const dados = await response.json();
-        setErroLista(dados.erro ?? `Erro HTTP: ${response.status}`);
+        setListError(dados.erro ?? `Erro HTTP: ${response.status}`);
         return;
       }
 
       setPessoas((atual) => atual.filter((p) => p.id !== id));
 
-      if (editandoId === id) LimpaForm();
+      if (editandoId === id) clearForm();
 
       // Exclusão concluída: fecha o modal
       setIsOpen(false);
       setSelectPessoa(null);
 
     } catch {
-      setErroLista("Não foi possivel conectar ao servidor!");
+      setListError("Não foi possivel conectar ao servidor!");
     } finally {
       setIsDeleting(false)
     }
   }
 
-  function OpenModal(p: Pessoa) {
+  function openModal(p: Pessoa) {
     setSelectPessoa(p)
     setIsOpen(true)
   }
 
   function handleConfirm() {
     if (selectPessoa) {
-      Apagar(selectPessoa.id)
+      deleteData(selectPessoa.id)
     }
   }
-
-  const campo =
-    "w-full rounded-lg bg-slate-700 px-3 py-2 text-slate-100 outline-none focus:ring-2 focus:ring-pink-400";
 
   return (
     <div className="min-h-screen bg-slate-900 p-8 text-slate-100 flex flex-col items-center">
       <h1 className="mb-6 text-3xl font-bold text-pink-400">Pessoas</h1>
 
       <form
-        onSubmit={Enviar}
-        className="mb-8 max-w-md space-y-3 rounded-lg bg-slate-800 p-4"
+        onSubmit={enviar}
+        className="mb-8 min-w-xl space-y-3 rounded-lg bg-slate-800 p-4"
       >
-        <input
-          className={campo}
-          placeholder="Nome"
+        <Input
+          type="text"
+          label="Nome"
           value={nome}
+          placeholder="Digite seu nome:"
           onChange={(e) => setNome(e.target.value)}
         />
-        <input
-          className={campo}
-          placeholder="Telefone"
+
+        <Input
+          type="text"
+          label="Telefone"
           value={telefone}
+          placeholder="Digite seu telefone"
           onChange={(e) => setTelefone(e.target.value)}
         />
-        <input
-          className={campo}
-          placeholder="Email"
+        <Input
+          type="email"
+          label="E-mail"
           value={email}
+          placeholder="Digite seu e-mail"
           onChange={(e) => setEmail(e.target.value)}
         />
 
         {erroForm && <p className="text-red-400">{erroForm}</p>}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-8">
           <button
             type="submit"
             disabled={enviando}
-            className="cursor-pointer rounded-lg bg-pink-500 px-4 py-2 font-semibold text-white hover:bg-pink-400 disabled:opacity-50"
+            className="cursor-pointer rounded-lg w-full bg-pink-500 px-4 py-3 font-semibold text-white hover:bg-pink-400 disabled:opacity-50"
           >
             {enviando
               ? "Salvando..."
@@ -181,8 +183,8 @@ function App() {
           {editandoId !== null && (
             <button
               type="button"
-              onClick={LimpaForm}
-              className="cursor-pointer rounded-lg bg-slate-600 px-4 py-2 hover:bg-slate-500"
+              onClick={clearForm}
+              className="cursor-pointer w-full rounded-lg bg-slate-600 px-4 py-2 hover:bg-slate-500"
             >
               Cancelar
             </button>
@@ -190,8 +192,8 @@ function App() {
         </div>
       </form>
 
-      {carregando && <p>Carregando...</p>}
-      {erroLista && <p className="text-red-400">{erroLista}</p>}
+      {loading && <p>Carregando...</p>}
+      {listError && <p className="text-red-400">{listError}</p>}
 
       <div className="border border-slate-700 rounded-xl p-4">
         <h2 className="mb-4 text-xl">Lista de Pessoas</h2>
@@ -203,8 +205,8 @@ function App() {
             >
               {
                 <Dropdown
-                  onEdit={() => IniciarEdicao(p)}
-                  onDelete={() => OpenModal(p)}
+                  onEdit={() => startEditing(p)}
+                  onDelete={() => openModal(p)}
                 />
               }
               <p>{p.nome}</p>
@@ -225,7 +227,7 @@ function App() {
             setSelectPessoa(null)
             setIsOpen(false)
           }}
-          title="Apagara essa pessoa?"
+          title="Apagar essa pessoa?"
           message={`Tem certeza que deseja apagar ${selectPessoa?.nome}?`}
           variant="danger"
           confirmBtnText="Confirmar"
