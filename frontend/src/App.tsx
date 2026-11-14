@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import type { Pessoa } from "./types";
+import type { Pessoa } from "./types/pessoas";
 import type { SyntheticEvent } from "react";
 import Dropdown from "./component/dropdown";
 import Modal from "./component/modal";
 import Input from "./component/input";
+
+import { getPessoas } from "./services/pessoa"
+
 
 function App() {
   //Lista
@@ -22,22 +25,24 @@ function App() {
   const [selectPessoa, setSelectPessoa] = useState<Pessoa | null>(null) //Estado para guardar a pessoa a ser deletada
   const [isDeleting, setIsDeleting] = useState(false)  //Estado para o spin de carregamento 
 
-  const API = import.meta.env.VITE_API_URL
+
 
   useEffect(() => {
     async function loadData() {
       try {
-        const response = await fetch(`${API}/pessoas`);
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-
-        const dados: Pessoa[] = await response.json();
+        const dados = await getPessoas();
         setPessoas(dados);
+
       } catch (e) {
-        setListError(e instanceof Error ? e.message : "Erro desconhecido");
+        setListError(
+          e instanceof Error ? e.message : "Erro desconhecido"
+        );
+
       } finally {
         setloading(false);
       }
     }
+
     loadData();
   }, []);
 
@@ -133,6 +138,7 @@ function App() {
       deleteData(selectPessoa.id)
     }
   }
+
 
   return (
     <div className="min-h-screen bg-slate-900 p-8 text-slate-100 flex flex-col items-center">
