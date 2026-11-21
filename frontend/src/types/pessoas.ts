@@ -4,3 +4,7 @@ export type Pessoa = {
   email: string;
   telefone: string;
 };
+
+export type ErroApi = {
+  erro: string;
+};
