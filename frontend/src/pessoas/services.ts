@@ -32,3 +32,22 @@ export async function createPessoa(
 
   return dados;
 }
+
+export async function editPessoa(
+  id: number, 
+  pessoa: Omit<Pessoa, "id">,
+):Promise<Pessoa>{
+  const response = await fetch(`${API}/pessoas/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({pessoa})
+  })
+
+  if (!response.ok) {
+    const erro: ErroApi = await response.json();
+    throw new Error(erro.erro ?? `Erro HTTP ${response.status}`);
+  }
+  const dados: Pessoa = await response.json()
+ 
+  return dados
+}
